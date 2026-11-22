@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#080d25">
+
+  <title>MATH DETECTIVE — Мұғалім панелі</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080d25;
+      --panel: #131b35;
+      --text: #f5f3ff;
+      --muted: #b8bed9;
+      --gold: #f3d38b;
+      --border: rgba(243, 211, 139, .23);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 50% 0%, #302356 0%, transparent 55%),
+        var(--bg);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: .5;
+    }
+
+    :focus-visible {
+      outline: 3px solid #baa0ff;
+      outline-offset: 3px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .app {
+      width: min(1140px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      margin: 0;
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .back {
+      color: var(--gold);
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    h1 {
+      margin: 30px 0 10px;
+      font-size: clamp(25px, 4vw, 36px);
+    }
+
+    .intro,
+    .hint {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .intro {
+      margin: 0 0 22px;
+      font-size: 14px;
+    }
+
+    .notice {
+      margin: 0 0 24px;
+      padding: 14px 18px;
+      color: #e4d6ff;
+      background: rgba(167, 139, 250, .09);
+      border: 1px solid rgba(167, 139, 250, .27);
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat {
+      padding: 18px;
+      background: linear-gradient(145deg, #222a48, #11172e);
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      box-shadow: 0 5px 0 #050a1b;
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--gold);
+      font-size: 28px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel {
+      margin-bottom: 24px;
+      padding: 24px;
+      background: linear-gradient(145deg, #1b2440, #10162d);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .07),
+        0 7px 0 #060b1b,
+        0 18px 35px rgba(0, 0, 0, .2);
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      color: #fff0c5;
+      font-size: 19px;
+    }
+
+    .hint {
+      margin: 0 0 20px;
+      font-size: 13px;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 210px auto;
+      align-items: end;
+      gap: 12px;
+    }
+
+    .fields.single {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    label {
+      display: block;
+      color: #d9deef;
+      font-size: 13px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 46px;
+      margin-top: 8px;
+      padding: 11px 13px;
+      color: var(--text);
+      background: #090f24;
+      border: 1px solid #424b6c;
+      border-radius: 10px;
+    }
+
+    input::placeholder {
+      color: #838dac;
+    }
+
+    .btn {
+      min-height: 46px;
+      padding: 11px 18px;
+      color: #251c31;
+      font-weight: 700;
+      border: 1px solid #ffe9b6;
+      border-radius: 10px;
+      background: linear-gradient(#fff0c3, #dfb45f);
+    }
+
+    .btn.secondary {
+      color: #e8defd;
+      border-color: #65518c;
+      background: #2b2344;
+    }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .teams {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .team {
+      min-width: 0;
+      padding: 17px;
+      background: rgba(6, 11, 28, .45);
+      border: 1px solid rgba(105, 201, 255, .3);
+      border-radius: 15px;
+    }
+
+    .team:nth-child(2) {
+      border-color: rgba(243, 211, 139, .35);
+    }
+
+    .team:nth-child(3) {
+      border-color: rgba(189, 156, 255, .35);
+    }
+
+    .team h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 0 0 14px;
+      color: #fff0c5;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    .list {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .student {
+      min-width: 0;
+      padding: 12px;
+      background: #151d36;
+      border: 1px solid #303a58;
+      border-radius: 11px;
+    }
+
+    .student-name {
+      display: block;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .small-btn {
+      padding: 7px 10px;
+      color: #e1d6ff;
+      background: #282140;
+      border: 1px solid #564570;
+      border-radius: 7px;
+      font-size: 12px;
+    }
+
+    .small-btn.delete {
+      color: #ffc0c9;
+      background: #382035;
+      border-color: #714052;
+    }
+
+    .empty {
+      margin: 0;
+      color: #929dbd;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .remaining-list {
+      margin-top: 22px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .status {
+      min-height: 24px;
+      margin: 14px 0 0;
+      color: #b7ebd0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .status.error {
+      color: #ffc0c9;
+    }
+
+    dialog {
+      width: min(420px, calc(100% - 32px));
+      padding: 24px;
+      color: var(--text);
+      background: #171e37;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, .72);
+    }
+
+    dialog p {
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 850px) {
+      .teams {
+        grid-template-columns: 1fr;
+      }
+
+      .fields {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .fields > button {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 540px) {
+      header {
+        align-items: flex-start;
+      }
+
+      .brand {
+        font-size: 12px;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .stats {
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 13px 10px;
+      }
+
+      .stat strong {
+        font-size: 24px;
+      }
+
+      .fields,
+      .fields.single,
+      .remaining-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <p class="brand">MATH DETECTIVE</p>
+      <a class="back" href="./index.html">Негізгі экранға →</a>
+    </header>
+
+    <main>
+      <h1>Мұғалімнің басқару панелі</h1>
+
+      <p class="intro">
+        Оқушылар тізімін дайындаңыз және тұрақты топтарды белгілеңіз.
+      </p>
+
+      <p class="notice">
+        Бұл бетке негізгі экраннан сілтеме берілмейді.
+        Енгізілген тізім негізгі экранда көрсетілмейді.
+        Панельді оқушыларға экранды көрсетпей тұрып баптаңыз.
+      </p>
+
+      <section class="stats" aria-label="Оқушылар саны">
+        <div class="stat">
+          <strong id="fixed-total">0</strong>
+          <span>Тобы бекітілген</span>
+        </div>
+
+        <div class="stat">
+          <strong id="remaining-total">0 / 8</strong>
+          <span>Қалған оқушылар</span>
+        </div>
+
+        <div class="stat">
+          <strong id="all-total">0</strong>
+          <span>Барлық оқушы</span>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="fixed-heading">
+        <h2 id="fixed-heading">4–5 бағасына оқитын оқушылар</h2>
+
+        <p class="hint">
+          Әр оқушының тобын өзіңіз таңдаңыз.
+          Бекітілген топ сақталады; оны осы панельде түзете аласыз.
+        </p>
+
+        <form id="fixed-form">
+          <div class="fields">
+            <label>
+              Оқушының аты-жөні
+              <input
+                id="fixed-name"
+                type="text"
+                placeholder="Мысалы: Әли Нұрлан"
+                maxlength="100"
+                autocomplete="off"
+                required
+              >
+            </label>
+
+            <label>
+              Тұрақты тобы
+              <select id="fixed-group" required>
+                <option value="NATURAL">NATURAL</option>
+                <option value="INTEGER">INTEGER</option>
+                <option value="RATIONAL">RATIONAL</option>
+              </select>
+            </label>
+
+            <button class="btn" id="fixed-submit" type="submit">
+              Оқушыны қосу
+            </button>
+          </div>
+
+          <div class="form-actions">
+            <button
+              class="btn secondary"
+              id="fixed-cancel"
+              type="button"
+              hidden
+            >
+              Түзетуден бас тарту
+            </button>
+          </div>
+        </form>
+
+        <div class="teams">
+          <section class="team" aria-labelledby="natural-heading">
+            <h3 id="natural-heading">
+              NATURAL
+              <span class="count" id="natural-count">0 оқушы</span>
+            </h3>
+            <ul class="list" id="natural-list"></ul>
+          </section>
+
+          <section class="team" aria-labelledby="integer-heading">
+            <h3 id="integer-heading">
+              INTEGER
+              <span class="count" id="integer-count">0 оқушы</span>
+            </h3>
+            <ul class="list" id="integer-list"></ul>
+          </section>
+
+          <section class="team" aria-labelledby="rational-heading">
+            <h3 id="rational-heading">
+              RATIONAL
+              <span class="count" id="rational-count">0 оқушы</span>
+            </h3>
+            <ul class="list" id="rational-list"></ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="remaining-heading">
+        <h2 id="remaining-heading">Қалған 8 оқушы</h2>
+
+        <p class="hint">
+          3 бағасына оқитын оқушыларды жеке енгізіңіз.
+          Бұл кезеңде оларға топ тағайындалмайды.
+        </p>
+
+        <form id="remaining-form">
+          <div class="fields single">
+            <label>
+              Оқушының аты-жөні
+              <input
+                id="remaining-name"
+                type="text"
+                placeholder="Оқушының аты-жөнін жазыңыз"
+                maxlength="100"
+                autocomplete="off"
+                required
+              >
+            </label>
+
+            <button class="btn" id="remaining-submit" type="submit">
+              Оқушыны қосу
+            </button>
+          </div>
+
+          <div class="form-actions">
+            <button
+              class="btn secondary"
+              id="remaining-cancel"
+              type="button"
+              hidden
+            >
+              Түзетуден бас тарту
+            </button>
+          </div>
+        </form>
+
+        <ul class="list remaining-list" id="remaining-list"></ul>
+      </section>
+
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </main>
+
+    <footer>
+      Ақпарат әр өзгерістен кейін осы браузерде автоматты сақталады.
+      Басқа құрылғыға өздігінен көшірілмейді.
+      Браузердің сайт деректерін тазаласаңыз, сақталған тізім жойылады.
+    </footer>
+  </div>
+
+  <dialog id="delete-dialog" aria-labelledby="delete-heading">
+    <h2 id="delete-heading">Оқушыны өшіру</h2>
+    <p id="delete-message"></p>
+
+    <form method="dialog" class="form-actions">
+      <button class="btn secondary" value="cancel" autofocus>
+        Бас тарту
+      </button>
+
+      <button class="btn" value="delete">
+        Өшіру
+      </button>
+    </form>
+  </dialog>
+
+  <script>
+    "use strict";
+
+    // Бұл код тек мұғалімнің тізімін басқарады.
+    // Мұнда кездейсоқ немесе автоматты топқа бөлу алгоритмі жоқ.
+
+    const STORAGE_KEY = "math-detective.teacher.v1";
+    const GROUPS = ["NATURAL", "INTEGER", "RATIONAL"];
+    const REMAINING_LIMIT = 8;
+
+    const $ = (id) => document.getElementById(id);
+
+    let state = {
+      version: 1,
+      fixed: [],
+      remaining: []
+    };
+
+    let editingFixedId = null;
+    let editingRemainingId = null;
+    let pendingDelete = null;
+    let storageUsable = true;
+
+    function showStatus(message, isError = false) {
+      $("status").textContent = message;
+      $("status").classList.toggle("error", isError);
+    }
+
+    function cleanName(value) {
+      return value.trim().replace(/\s+/g, " ");
+    }
+
+    function nameKey(value) {
+      return cleanName(value).toLocaleLowerCase("kk-KZ");
+    }
+
+    function createId() {
+      if (globalThis.crypto?.randomUUID) {
+        return crypto.randomUUID();
+      }
+
+      return Date.now().toString(36) + "-" +
+        Math.random().toString(36).slice(2);
+    }
+
+    function isValidData(data) {
+      if (
+        !data ||
+        data.version !== 1 ||
+        !Array.isArray(data.fixed) ||
+        !Array.isArray(data.remaining) ||
+        data.remaining.length > REMAINING_LIMIT
+      ) {
+        return false;
+      }
+
+      const all = [...data.fixed, ...data.remaining];
+      const ids = new Set();
+
+      for (const student of all) {
+        if (
+          !student ||
+          typeof student.id !== "string" ||
+          !student.id ||
+          ids.has(student.id) ||
+          typeof student.name !== "string" ||
+          !cleanName(student.name) ||
+          student.name.length > 100
+        ) {
+          return false;
+        }
+
+        ids.add(student.id);
+      }
+
+      return data.fixed.every(
+        (student) => GROUPS.includes(student.group)
+      );
+    }
+
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (saved !== null) {
+          const parsed = JSON.parse(saved);
+
+          if (!isValidData(parsed)) {
+            throw new Error("Invalid saved data");
+          }
+
+          state = parsed;
+        }
+
+        showStatus(
+          saved === null
+            ? "Оқушыларды енгізуге болады."
+            : "Бұрын сақталған тізім жүктелді."
+        );
+      } catch (error) {
+        storageUsable = false;
+
+        showStatus(
+          "Сақталған ақпаратты оқу мүмкін болмады. " +
+          "Деректерді қорғау үшін өзгерту тоқтатылды. " +
+          "Бетті қайта ашып көріңіз және браузердің сақтау рұқсатын тексеріңіз.",
+          true
+        );
+      }
+    }
+
+    // Алдымен браузерге сақтаймыз.
+    // Сақтау сәтсіз болса, көрсетілген тізімді өзгертпейміз.
+    function commit(nextState, message) {
+      if (!storageUsable) {
+        showStatus(
+          "Сақтау қолжетімсіз. Бетті қайта ашып көріңіз.",
+          true
+        );
+
+        return false;
+      }
+
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(nextState)
+        );
+
+        state = nextState;
+        render();
+        showStatus(message + " Өзгеріс сақталды.");
+
+        return true;
+      } catch (error) {
+        showStatus(
+          "Өзгерісті сақтау мүмкін болмады. " +
+          "Тізім өзгертілген жоқ. Браузердің сақтау рұқсатын тексеріңіз.",
+          true
+        );
+
+        return false;
+      }
+    }
+
+    function hasDuplicate(name, excludedId = null) {
+      return [...state.fixed, ...state.remaining].some(
+        (student) =>
+          student.id !== excludedId &&
+          nameKey(student.name) === nameKey(name)
+      );
+    }
+
+    function makeButton(text, className, action) {
+      const button = document.createElement("button");
+
+      button.type = "button";
+      button.className = className;
+      button.textContent = text;
+      button.disabled = !storageUsable;
+      button.addEventListener("click", action);
+
+      return button;
+    }
+
+    function makeStudentRow(student, category) {
+      const row = document.createElement("li");
+      row.className = "student";
+
+      const name = document.createElement("span");
+      name.className = "student-name";
+
+      // Аты-жөнін HTML ретінде орындамай, мәтін ретінде шығарамыз.
+      name.textContent = student.name;
+
+      const actions = document.createElement("div");
+      actions.className = "row-actions";
+
+      const editButton = makeButton(
+        "Түзету",
+        "small-btn",
+        () => startEditing(category, student.id)
+      );
+
+      editButton.setAttribute(
+        "aria-label",
+        student.name + " — түзету"
+      );
+
+      const deleteButton = makeButton(
+        "Өшіру",
+        "small-btn delete",
+        () => askDelete(category, student.id)
+      );
+
+      deleteButton.setAttribute(
+        "aria-label",
+        student.name + " — өшіру"
+      );
+
+      actions.append(editButton, deleteButton);
+      row.append(name, actions);
+
+      return row;
+    }
+
+    function renderList(list, students, category, emptyMessage) {
+      list.replaceChildren();
+
+      if (students.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "empty";
+        empty.textContent = emptyMessage;
+        list.append(empty);
+
+        return;
+      }
+
+      for (const student of students) {
+        list.append(makeStudentRow(student, category));
+      }
+    }
+
+    function render() {
+      for (const group of GROUPS) {
+        const prefix = group.toLowerCase();
+        const students = state.fixed.filter(
+          (student) => student.group === group
+        );
+
+        $(prefix + "-count").textContent =
+          students.length + " оқушы";
+
+        renderList(
+          $(prefix + "-list"),
+          students,
+          "fixed",
+          "Бұл топқа әлі оқушы қосылмаған."
+        );
+      }
+
+      renderList(
+        $("remaining-list"),
+        state.remaining,
+        "remaining",
+        "Қалған оқушылардың тізімі әзірге бос."
+      );
+
+      $("fixed-total").textContent = state.fixed.length;
+      $("remaining-total").textContent =
+        state.remaining.length + " / " + REMAINING_LIMIT;
+
+      $("all-total").textContent =
+        state.fixed.length + state.remaining.length;
+
+      $("fixed-submit").textContent = editingFixedId
+        ? "Өзгерісті сақтау"
+        : "Оқушыны қосу";
+
+      $("remaining-submit").textContent = editingRemainingId
+        ? "Өзгерісті сақтау"
+        : state.remaining.length >= REMAINING_LIMIT
+          ? "8 оқушы енгізілді"
+          : "Оқушыны қосу";
+
+      $("fixed-cancel").hidden = !editingFixedId;
+      $("remaining-cancel").hidden = !editingRemainingId;
+
+      $("fixed-submit").disabled = !storageUsable;
+
+      $("remaining-submit").disabled =
+        !storageUsable ||
+        (
+          !editingRemainingId &&
+          state.remaining.length >= REMAINING_LIMIT
+        );
+
+      $("fixed-name").disabled = !storageUsable;
+      $("fixed-group").disabled = !storageUsable;
+      $("remaining-name").disabled = !storageUsable;
+    }
+
+    function resetFixedForm() {
+      editingFixedId = null;
+      $("fixed-form").reset();
+      render();
+    }
+
+    function resetRemainingForm() {
+      editingRemainingId = null;
+      $("remaining-form").reset();
+      render();
+    }
+
+    function startEditing(category, id) {
+      const student = state[category].find(
+        (item) => item.id === id
+      );
+
+      if (!student) return;
+
+      if (category === "fixed") {
+        editingFixedId = id;
+        $("fixed-name").value = student.name;
+        $("fixed-group").value = student.group;
+        render();
+        $("fixed-name").focus();
+      } else {
+        editingRemainingId = id;
+        $("remaining-name").value = student.name;
+        render();
+        $("remaining-name").focus();
+      }
+
+      showStatus("Өзгертіп болған соң «Өзгерісті сақтау» басыңыз.");
+    }
+
+    $("fixed-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const name = cleanName($("fixed-name").value);
+      const group = $("fixed-group").value;
+
+      if (!name) {
+        showStatus("Оқушының аты-жөнін енгізіңіз.", true);
+        $("fixed-name").focus();
+        return;
+      }
+
+      if (!GROUPS.includes(group)) return;
+
+      if (hasDuplicate(name, editingFixedId)) {
+        showStatus(
+          "Бұл аты-жөн тізімде бар. Аттас оқушылар болса, " +
+          "әкесінің атын немесе басқа ажыратушы белгі қосыңыз.",
+          true
+        );
+        return;
+      }
+
+      const wasEditing = Boolean(editingFixedId);
+
+      const fixed = wasEditing
+        ? state.fixed.map((student) =>
+            student.id === editingFixedId
+              ? { ...student, name, group }
+              : student
+          )
+        : [
+            ...state.fixed,
+            { id: createId(), name, group }
+          ];
+
+      if (
+        commit(
+          { ...state, fixed },
+          wasEditing
+            ? "Оқушының ақпараты түзетілді."
+            : "Оқушының тұрақты тобы бекітілді."
+        )
+      ) {
+        resetFixedForm();
+        $("fixed-name").focus();
+      }
+    });
+
+    $("remaining-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const name = cleanName($("remaining-name").value);
+
+      if (!name) {
+        showStatus("Оқушының аты-жөнін енгізіңіз.", true);
+        $("remaining-name").focus();
+        return;
+      }
+
+      if (
+        !editingRemainingId &&
+        state.remaining.length >= REMAINING_LIMIT
+      ) {
+        showStatus(
+          "Бұл тізімге ең көбі 8 оқушы енгізіледі.",
+          true
+        );
+        return;
+      }
+
+      if (hasDuplicate(name, editingRemainingId)) {
+        showStatus(
+          "Бұл аты-жөн тізімде бар. Аттас оқушылар болса, " +
+          "әкесінің атын немесе басқа ажыратушы белгі қосыңыз.",
+          true
+        );
+        return;
+      }
+
+      const wasEditing = Boolean(editingRemainingId);
+
+      const remaining = wasEditing
+        ? state.remaining.map((student) =>
+            student.id === editingRemainingId
+              ? { ...student, name }
+              : student
+          )
+        : [
+            ...state.remaining,
+            { id: createId(), name }
+          ];
+
+      if (
+        commit(
+          { ...state, remaining },
+          wasEditing
+            ? "Оқушының аты-жөні түзетілді."
+            : "Оқушы жеке тізімге қосылды."
+        )
+      ) {
+        resetRemainingForm();
+        $("remaining-name").focus();
+      }
+    });
+
+    $("fixed-cancel").addEventListener("click", () => {
+      resetFixedForm();
+      showStatus("Түзету тоқтатылды.");
+    });
+
+    $("remaining-cancel").addEventListener("click", () => {
+      resetRemainingForm();
+      showStatus("Түзету тоқтатылды.");
+    });
+
+    function askDelete(category, id) {
+      const student = state[category].find(
+        (item) => item.id === id
+      );
+
+      if (!student) return;
+
+      pendingDelete = { category, id };
+
+      $("delete-message").textContent =
+        "«" + student.name + "» оқушысын тізімнен өшіресіз бе?";
+
+      $("delete-dialog").returnValue = "";
+      $("delete-dialog").showModal();
+    }
+
+    $("delete-dialog").addEventListener("close", () => {
+      const target = pendingDelete;
+      pendingDelete = null;
+
+      if (
+        $("delete-dialog").returnValue !== "delete" ||
+        !target
+      ) {
+        return;
+      }
+
+      const { category, id } = target;
+
+      const nextState = {
+        ...state,
+        [category]: state[category].filter(
+          (student) => student.id !== id
+        )
+      };
+
+      if (commit(nextState, "Оқушы тізімнен өшірілді.")) {
+        if (category === "fixed" && editingFixedId === id) {
+          resetFixedForm();
+        }
+
+        if (
+          category === "remaining" &&
+          editingRemainingId === id
+        ) {
+          resetRemainingForm();
+        }
+      }
+    });
+
+    // Басқа ашық қойындыда тізім өзгерсе,
+    // ескі көшірмемен үстінен жазуды тоқтатамыз.
+    window.addEventListener("storage", (event) => {
+      if (
+        event.key === STORAGE_KEY ||
+        event.key === null
+      ) {
+        storageUsable = false;
+        $("delete-dialog").close();
+        render();
+
+        showStatus(
+          "Тізім басқа қойындыда өзгертілді. " +
+          "Соңғы ақпаратты алу үшін осы бетті жаңартыңыз.",
+          true
+        );
+      }
+    });
+
+    loadData();
+    render();
+  </script>
+</body>
+</html>
