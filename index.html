@@ -534,6 +534,12 @@
         transition: none !important;
       }
     }
+
+    .public-students { list-style:none; padding:0; margin:20px 0 0; display:grid; gap:8px; }
+    .public-students:empty { display:none; }
+    .public-students li { padding:9px 10px; color:#f5f3ff; font-size:15px;
+      line-height:1.5; overflow-wrap:anywhere; background:rgba(8,13,37,.45);
+      border:1px solid rgba(243,211,139,.16); border-radius:9px; }
   </style>
 </head>
 
@@ -589,7 +595,7 @@
             </div>
 
             <h3>NATURAL</h3>
-            <p class="team-description">Натурал сандар</p>
+            <ul class="public-students" id="public-NATURAL" aria-label="NATURAL тобының оқушылары"></ul>
           </article>
 
           <article class="team-card">
@@ -600,7 +606,7 @@
             </div>
 
             <h3>INTEGER</h3>
-            <p class="team-description">Бүтін сандар</p>
+            <ul class="public-students" id="public-INTEGER" aria-label="INTEGER тобының оқушылары"></ul>
           </article>
 
           <article class="team-card">
@@ -611,32 +617,12 @@
             </div>
 
             <h3>RATIONAL</h3>
-            <p class="team-description">Рационал сандар</p>
+            <ul class="public-students" id="public-RATIONAL" aria-label="RATIONAL тобының оқушылары"></ul>
           </article>
         </div>
       </section>
 
-      <section class="launch" aria-label="Топқа бөлуді бастау">
-        <!--
-          Бірінші кезең:
-          Батырма әдейі өшірулі.
-          Топқа бөлу алгоритмі келесі кезеңде қосылады.
-        -->
-        <button
-          class="start-button"
-          id="start-button"
-          type="button"
-          aria-describedby="launch-note"
-          disabled
-        >
-          <span>Топқа бөлуді бастау</span>
-          <span aria-hidden="true">→</span>
-        </button>
 
-        <p class="launch-note" id="launch-note">
-          Топқа бөлу мүмкіндігі келесі кезеңде іске қосылады.
-        </p>
-      </section>
     </main>
 
     <footer class="footer">
@@ -644,5 +630,7 @@
       <span>ℕ ⊂ ℤ ⊂ ℚ</span>
     </footer>
   </div>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
+

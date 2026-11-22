@@ -407,7 +407,30 @@
 </head>
 
 <body>
-  <div class="app">
+  <section class="app" id="access-gate" style="max-width:540px">
+    <p class="brand">MATH DETECTIVE</p>
+    <div class="panel" style="margin-top:24px">
+      <h1 id="access-title">Мұғалімнің кіруі</h1>
+      <form id="access-form">
+        <label>Құпиясөз
+          <input id="access-password" type="password" required maxlength="200" autocomplete="current-password">
+        </label>
+        <label id="setup-repeat">Құпиясөзді қайталаңыз
+          <input id="access-repeat" type="password" maxlength="200" autocomplete="new-password">
+        </label>
+        <button class="btn" style="margin-top:18px" type="submit">Панельді ашу</button>
+      </form>
+      <p class="status" id="access-status" role="status"></p>
+      <p class="hint">Құпиясөз қалпына келтірілмейді. Оны және резервтік көшірмені сақтаңыз.</p>
+      <label>Резервтік көшірмені қалпына келтіру
+        <input id="restore-file" type="file" accept=".json,application/json">
+      </label>
+      <p class="hint">Алдымен жоғарыға сол көшірменің құпиясөзін енгізіңіз, содан кейін файлды таңдаңыз.</p>
+      <a class="back" href="./index.html">Негізгі экранға →</a>
+    </div>
+  </section>
+
+  <div class="app" hidden>
     <header>
       <p class="brand">MATH DETECTIVE</p>
       <a class="back" href="./index.html">Негізгі экранға →</a>
@@ -420,11 +443,11 @@
         Оқушылар тізімін дайындаңыз және тұрақты топтарды белгілеңіз.
       </p>
 
-      <p class="notice">
-        Бұл бетке негізгі экраннан сілтеме берілмейді.
-        Енгізілген тізім негізгі экранда көрсетілмейді.
-        Панельді оқушыларға экранды көрсетпей тұрып баптаңыз.
-      </p>
+      <p class="notice">Ішкі мәліметтер шифрланып сақталады. Негізгі экранға тек бекітілген топтардағы аты-жөндер шығады. Қалған 8 оқушы әзірге бөлінбейді.</p>
+      <div class="form-actions" style="margin-bottom:22px">
+        <button type="button" class="btn secondary" id="backup-panel">Резервтік көшірмені жүктеу</button>
+        <button type="button" class="btn secondary" id="lock-panel">Панельді құлыптау</button>
+      </div>
 
       <section class="stats" aria-label="Оқушылар саны">
         <div class="stat">
@@ -585,13 +608,108 @@
     </form>
   </dialog>
 
-  <script>
+  <script type="module">
+    import {KEY, LEGACY, read, valid, unlock, create, seal, download} from './vault.js';
+    let session;
+    let lastRaw;
+    const gate = document.getElementById('access-gate');
+    const gateForm = document.getElementById('access-form');
+    const gateStatus = document.getElementById('access-status');
+    const pass = document.getElementById('access-password');
+    const repeat = document.getElementById('access-repeat');
+    let initialRaw;
+    let initialLegacy;
+    try {
+      if (!crypto.subtle || !navigator.locks) throw new Error('unsupported');
+      initialRaw = read();
+      initialLegacy = localStorage.getItem(LEGACY);
+      document.getElementById('setup-repeat').hidden = !!initialRaw;
+      repeat.required = !initialRaw;
+      pass.minLength = initialRaw ? 1 : 12;
+      pass.autocomplete = initialRaw ? 'current-password' : 'new-password';
+      document.getElementById('access-title').textContent = initialRaw
+        ? 'Мұғалімнің кіруі' : 'Құпиясөз орнату';
+      gateStatus.textContent = initialRaw
+        ? 'Тізімді ашу үшін құпиясөзді енгізіңіз.'
+        : 'Кемі 12 таңбалы құпиясөз орнатыңыз. Бұрынғы тізім сақталып, шифрланады.';
+    } catch (error) {
+      gateStatus.textContent = 'Сақтау немесе шифрлау қолжетімсіз. Сайтты HTTPS арқылы жаңартылған браузерде ашыңыз.';
+      gateForm.querySelector('button').disabled = true;
+    }
+    document.getElementById('restore-file').onchange = async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        if (file.size > 2000000) throw new Error('size');
+        const raw = await file.text();
+        const parsed = JSON.parse(raw);
+        if (parsed.version !== 3) throw new Error('version');
+        const restored = await unlock(raw, pass.value);
+        const restoredRaw = await seal(restored, restored.data);
+        const beforeRestore = read();
+        if (!confirm('Резервтік көшірме осы браузердегі тізімді алмастырады. Жалғастырасыз ба?')) return;
+        await navigator.locks.request(KEY, async () => {
+          if (read() !== beforeRestore) throw new Error('changed');
+          localStorage.setItem(KEY, restoredRaw);
+          // Remove old plaintext only after encrypted data was verified and saved.
+          localStorage.removeItem(LEGACY);
+        });
+        location.reload();
+      } catch (error) {
+        gateStatus.textContent = 'Қалпына келмеді. Көшірменің құпиясөзін енгізіп, файлды қайта таңдаңыз. Бұрынғы тізім өшірілмеді.';
+      } finally { event.target.value = ''; }
+    };
+    await new Promise(resolve => {
+      gateForm.onsubmit = async event => {
+        event.preventDefault();
+        const button = gateForm.querySelector('button');
+        button.disabled = true;
+        gateStatus.textContent = 'Тексерілуде…';
+        try {
+          const raw = read();
+          if (raw !== initialRaw || localStorage.getItem(LEGACY) !== initialLegacy)
+            throw new Error('changed');
+          let candidate;
+          if (raw) {
+            candidate = await unlock(raw, pass.value);
+          } else {
+            if (pass.value.length < 12 || pass.value !== repeat.value)
+              throw new Error('password');
+            const old = initialLegacy === null
+              ? {version:1, fixed:[], remaining:[]}
+              : JSON.parse(initialLegacy);
+            if (!valid(old)) throw new Error('legacy');
+            candidate = await create(pass.value, old);
+          }
+          const next = await seal(candidate, candidate.data);
+          await navigator.locks.request(KEY, async () => {
+            if (read() !== raw || localStorage.getItem(LEGACY) !== initialLegacy)
+              throw new Error('changed');
+            localStorage.setItem(KEY, next);
+            // Confirm the encrypted payload is durable before removing plaintext.
+            if (read() !== next) throw new Error('write');
+            localStorage.removeItem(LEGACY);
+          });
+          session = candidate;
+          lastRaw = next;
+          pass.value = ''; repeat.value = '';
+          gate.remove();
+          document.querySelector('.app').hidden = false;
+          resolve();
+        } catch (error) {
+          gateStatus.textContent = error.message === 'password'
+            ? 'Кемі 12 таңба енгізіп, құпиясөзді бірдей қайталаңыз.'
+            : 'Кіру орындалмады. Құпиясөзді тексеріңіз. Деректер өзгерсе, бетті жаңартыңыз. Тізім автоматты тазаланбайды.';
+        } finally { button.disabled = false; }
+      };
+    });
+
     "use strict";
 
     // Бұл код тек мұғалімнің тізімін басқарады.
     // Мұнда кездейсоқ немесе автоматты топқа бөлу алгоритмі жоқ.
 
-    const STORAGE_KEY = "math-detective.teacher.v1";
+    const STORAGE_KEY = KEY;
     const GROUPS = ["NATURAL", "INTEGER", "RATIONAL"];
     const REMAINING_LIMIT = 8;
 
@@ -665,68 +783,33 @@
       );
     }
 
-    function loadData() {
+    let busy = false;
+    async function commit(nextState, message) {
+      if (!storageUsable || busy) return false;
+      busy = true;
+      document.querySelector('.app').inert = true;
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-
-        if (saved !== null) {
-          const parsed = JSON.parse(saved);
-
-          if (!isValidData(parsed)) {
-            throw new Error("Invalid saved data");
-          }
-
-          state = parsed;
-        }
-
-        showStatus(
-          saved === null
-            ? "Оқушыларды енгізуге болады."
-            : "Бұрын сақталған тізім жүктелді."
-        );
-      } catch (error) {
-        storageUsable = false;
-
-        showStatus(
-          "Сақталған ақпаратты оқу мүмкін болмады. " +
-          "Деректерді қорғау үшін өзгерту тоқтатылды. " +
-          "Бетті қайта ашып көріңіз және браузердің сақтау рұқсатын тексеріңіз.",
-          true
-        );
-      }
-    }
-
-    // Алдымен браузерге сақтаймыз.
-    // Сақтау сәтсіз болса, көрсетілген тізімді өзгертпейміз.
-    function commit(nextState, message) {
-      if (!storageUsable) {
-        showStatus(
-          "Сақтау қолжетімсіз. Бетті қайта ашып көріңіз.",
-          true
-        );
-
-        return false;
-      }
-
-      try {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(nextState)
-        );
-
+        const nextRaw = await seal(session, nextState);
+        await navigator.locks.request(KEY, async () => {
+          if (read() !== lastRaw) throw new Error('conflict');
+          localStorage.setItem(KEY, nextRaw);
+          lastRaw = nextRaw;
+        });
         state = nextState;
         render();
-        showStatus(message + " Өзгеріс сақталды.");
-
+        showStatus(message + ' Өзгеріс сақталды.');
         return true;
       } catch (error) {
-        showStatus(
-          "Өзгерісті сақтау мүмкін болмады. " +
-          "Тізім өзгертілген жоқ. Браузердің сақтау рұқсатын тексеріңіз.",
-          true
-        );
-
+        if (error.message === 'conflict') {
+          storageUsable = false;
+          render();
+        }
+        showStatus('Сақтау орындалмады. Бұрынғы дерек сақталды. ' +
+          'Бетті жаңартып, қайта кіріңіз.', true);
         return false;
+      } finally {
+        busy = false;
+        document.querySelector('.app').inert = false;
       }
     }
 
@@ -902,7 +985,7 @@
       showStatus("Өзгертіп болған соң «Өзгерісті сақтау» басыңыз.");
     }
 
-    $("fixed-form").addEventListener("submit", (event) => {
+    $("fixed-form").addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const name = cleanName($("fixed-name").value);
@@ -939,7 +1022,7 @@
           ];
 
       if (
-        commit(
+        await commit(
           { ...state, fixed },
           wasEditing
             ? "Оқушының ақпараты түзетілді."
@@ -951,7 +1034,7 @@
       }
     });
 
-    $("remaining-form").addEventListener("submit", (event) => {
+    $("remaining-form").addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const name = cleanName($("remaining-name").value);
@@ -996,7 +1079,7 @@
           ];
 
       if (
-        commit(
+        await commit(
           { ...state, remaining },
           wasEditing
             ? "Оқушының аты-жөні түзетілді."
@@ -1034,7 +1117,7 @@
       $("delete-dialog").showModal();
     }
 
-    $("delete-dialog").addEventListener("close", () => {
+    $("delete-dialog").addEventListener("close", async () => {
       const target = pendingDelete;
       pendingDelete = null;
 
@@ -1054,7 +1137,7 @@
         )
       };
 
-      if (commit(nextState, "Оқушы тізімнен өшірілді.")) {
+      if (await commit(nextState, "Оқушы тізімнен өшірілді.")) {
         if (category === "fixed" && editingFixedId === id) {
           resetFixedForm();
         }
@@ -1087,8 +1170,26 @@
       }
     });
 
-    loadData();
+    state = session.data;
+    showStatus('Қорғалған тізім жүктелді.');
     render();
+  
+    document.getElementById('lock-panel').onclick = () => location.replace('./teacher.html');
+    document.getElementById('backup-panel').onclick = () => {
+      download(lastRaw, 'math-detective-backup.json');
+      showStatus('Шифрланған резервтік көшірме жүктелді. Құпиясөзді бөлек сақтаңыз.');
+    };
+    let idleTimer;
+    function resetIdle() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => location.replace('./teacher.html'), 5 * 60 * 1000);
+    }
+    for (const type of ['pointerdown', 'keydown', 'input'])
+      document.addEventListener(type, resetIdle, {passive:true});
+    window.addEventListener('pagehide', () => { document.querySelector('.app').hidden = true; });
+    window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
+    resetIdle();
   </script>
 </body>
 </html>
+
