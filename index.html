@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="MATH DETECTIVE — 6-сынып математика сабағына арналған интерактивті топқа бөлу жүйесі."
+  >
+
+  <meta name="theme-color" content="#080d25">
+
+  <title>MATH DETECTIVE — Математикалық зерттеу</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #080d25;
+      --text: #f5f3ff;
+      --muted: #b8bed9;
+      --gold: #f3d38b;
+      --gold-light: #fff0c5;
+      --purple: #a78bfa;
+      --blue: #69c9ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100svh;
+      color: var(--text);
+      background:
+        radial-gradient(
+          ellipse at 50% -15%,
+          rgba(92, 73, 178, 0.45),
+          transparent 55%
+        ),
+        radial-gradient(
+          ellipse at 0% 65%,
+          rgba(24, 102, 161, 0.16),
+          transparent 45%
+        ),
+        radial-gradient(
+          ellipse at 100% 80%,
+          rgba(116, 46, 166, 0.2),
+          transparent 45%
+        ),
+        var(--background);
+      font-family: "Segoe UI", Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .scene {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .scene::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 76px 76px;
+      mask-image: linear-gradient(to bottom, black, transparent);
+    }
+
+    .orb {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      filter: blur(85px);
+      opacity: 0.2;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+
+    .orb-one {
+      top: 20%;
+      left: -180px;
+      background: #28a9ff;
+    }
+
+    .orb-two {
+      right: -160px;
+      bottom: 5%;
+      background: #9a4bff;
+      animation-delay: -6s;
+    }
+
+    .app {
+      width: min(1200px, calc(100% - 64px));
+      margin: 0 auto;
+      padding: 30px 0 26px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid rgba(243, 211, 139, 0.14);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 48px;
+      color: var(--gold-light);
+      font-family: Georgia, serif;
+      font-size: 25px;
+      font-weight: bold;
+      background: linear-gradient(145deg, #414166, #131831);
+      border: 1px solid rgba(243, 211, 139, 0.6);
+      border-radius: 14px 14px 19px 19px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .brand-name {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .brand-caption {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .class-badge {
+      padding: 9px 16px;
+      color: var(--gold);
+      font-size: 13px;
+      border: 1px solid rgba(243, 211, 139, 0.24);
+      border-radius: 999px;
+      background: rgba(243, 211, 139, 0.05);
+    }
+
+    .hero {
+      padding: 54px 0 34px;
+      text-align: center;
+      animation: rise 0.8s ease both;
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(38px, 6.7vw, 82px);
+      font-weight: 900;
+      line-height: 1.06;
+      letter-spacing: -2px;
+    }
+
+    h1 span {
+      display: block;
+      margin-top: 4px;
+      color: var(--gold);
+      background: linear-gradient(
+        180deg,
+        #fff4cd 8%,
+        #f2cf7a 45%,
+        #b78034 100%
+      );
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 6px 14px rgba(217, 163, 70, 0.18));
+    }
+
+    .hero-line {
+      width: 130px;
+      height: 2px;
+      margin: 25px auto 21px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--gold),
+        transparent
+      );
+    }
+
+    .lesson-label {
+      margin: 0 0 9px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .lesson-title {
+      margin: 0;
+      color: #e5e8fa;
+      font-size: clamp(17px, 2.4vw, 25px);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .teams-section {
+      padding: 6px 0 0;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 0 0 23px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-align: center;
+    }
+
+    .section-heading::before,
+    .section-heading::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(243, 211, 139, 0.25)
+      );
+    }
+
+    .section-heading::after {
+      transform: rotate(180deg);
+    }
+
+    .teams {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+      perspective: 1200px;
+    }
+
+    .team-card {
+      --accent: #69c9ff;
+      --accent-rgb: 105, 201, 255;
+
+      position: relative;
+      isolation: isolate;
+      min-height: 290px;
+      padding: 25px 20px 29px;
+      text-align: center;
+      border: 1px solid rgba(243, 211, 139, 0.4);
+      border-radius: 24px;
+      background:
+        radial-gradient(
+          ellipse at 50% 5%,
+          rgba(var(--accent-rgb), 0.17),
+          transparent 67%
+        ),
+        linear-gradient(150deg, #202a49, #11172e 65%, #101328);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        inset 0 -5px 0 rgba(0, 0, 0, 0.25),
+        0 8px 0 #060b1b,
+        0 9px 0 rgba(243, 211, 139, 0.15),
+        0 24px 40px rgba(0, 0, 0, 0.35);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: rise 0.8s ease both;
+    }
+
+    .team-card:nth-child(2) {
+      --accent: #f3d38b;
+      --accent-rgb: 243, 211, 139;
+      animation-delay: 0.12s;
+    }
+
+    .team-card:nth-child(3) {
+      --accent: #bd9cff;
+      --accent-rgb: 189, 156, 255;
+      animation-delay: 0.24s;
+    }
+
+    .team-card::before {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      z-index: -1;
+      border: 1px solid rgba(243, 211, 139, 0.1);
+      border-radius: 17px;
+      pointer-events: none;
+    }
+
+    .team-number {
+      margin: 0 0 20px;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 3px;
+    }
+
+    .emblem {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 103px;
+      height: 103px;
+      margin: 0 auto 22px;
+      border: 2px solid #c29650;
+      border-radius: 25px;
+      background:
+        radial-gradient(
+          circle at 35% 20%,
+          rgba(var(--accent-rgb), 0.22),
+          transparent 70%
+        ),
+        linear-gradient(145deg, #344161, #0b1025);
+      box-shadow:
+        inset 2px 2px 3px rgba(255, 245, 199, 0.25),
+        inset -3px -4px 5px rgba(0, 0, 0, 0.55),
+        0 6px 0 #765327,
+        0 10px 0 #070d1c,
+        0 16px 25px rgba(0, 0, 0, 0.45),
+        0 0 30px rgba(var(--accent-rgb), 0.1);
+      transform: rotate(-7deg);
+    }
+
+    .emblem span {
+      color: var(--accent);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 59px;
+      line-height: 1;
+      text-shadow:
+        0 2px 0 rgba(255, 255, 255, 0.15),
+        2px 5px 0 rgba(0, 0, 0, 0.45),
+        0 0 20px rgba(var(--accent-rgb), 0.28);
+      transform: rotate(7deg);
+    }
+
+    .team-card h3 {
+      margin: 0 0 10px;
+      color: var(--gold-light);
+      font-size: clamp(19px, 2.4vw, 26px);
+      letter-spacing: 3px;
+    }
+
+    .team-description {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .launch {
+      padding: 38px 0 0;
+      text-align: center;
+      animation: rise 0.8s 0.3s ease both;
+    }
+
+    .start-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      min-height: 58px;
+      max-width: 100%;
+      padding: 16px 35px;
+      color: #271c36;
+      font-size: 15px;
+      font-weight: 800;
+      border: 1px solid #ffe9b6;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff0c3, #dfb45f);
+      box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.6),
+        0 5px 0 #785629,
+        0 12px 35px rgba(205, 154, 63, 0.16);
+    }
+
+    .start-button:disabled {
+      cursor: default;
+      opacity: 0.8;
+    }
+
+    .launch-note {
+      margin: 17px auto 0;
+      max-width: 460px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 43px;
+      padding-top: 18px;
+      color: #929bbd;
+      font-size: 11px;
+      line-height: 1.6;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes drift {
+      from {
+        transform: translateY(-35px);
+      }
+
+      to {
+        transform: translateY(35px);
+      }
+    }
+
+    @media (hover: hover) {
+      .team-card:hover {
+        transform: translateY(-8px) rotateX(3deg);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.2),
+          inset 0 -5px 0 rgba(0, 0, 0, 0.25),
+          0 8px 0 #060b1b,
+          0 9px 0 rgba(243, 211, 139, 0.3),
+          0 30px 45px rgba(0, 0, 0, 0.4),
+          0 0 30px rgba(var(--accent-rgb), 0.08);
+      }
+    }
+
+    @media (min-width: 1500px) {
+      .app {
+        padding-top: 45px;
+      }
+
+      .hero {
+        padding-top: 70px;
+      }
+
+      .team-card {
+        min-height: 320px;
+        padding-top: 33px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .app {
+        width: calc(100% - 32px);
+        padding-top: 20px;
+      }
+
+      .hero {
+        padding-top: 40px;
+      }
+
+      h1 {
+        letter-spacing: -1px;
+      }
+
+      .teams {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        max-width: 420px;
+        margin: 0 auto;
+      }
+
+      .team-card {
+        min-height: 270px;
+      }
+
+      .section-heading {
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+
+      .brand-name {
+        font-size: 11px;
+        letter-spacing: 1px;
+      }
+
+      .class-badge {
+        padding: 8px 12px;
+        white-space: nowrap;
+      }
+
+      .footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+  </div>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M</div>
+
+        <div>
+          <span class="brand-name">MATH DETECTIVE</span>
+          <span class="brand-caption">Математикалық зерттеу</span>
+        </div>
+      </div>
+
+      <span class="class-badge">6-сынып</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="project-title">
+        <p class="eyebrow">Әр санның өз құпиясы бар</p>
+
+        <h1 id="project-title">
+          MATH
+          <span>DETECTIVE</span>
+        </h1>
+
+        <div class="hero-line" aria-hidden="true"></div>
+
+        <p class="lesson-label">Бүгінгі зерттеу тақырыбы</p>
+
+        <h2 class="lesson-title">
+          Натурал, бүтін және рационал сандар
+        </h2>
+      </section>
+
+      <section class="teams-section" aria-labelledby="teams-title">
+        <h2 class="section-heading" id="teams-title">
+          ҮШ ТОП · БІР ЗЕРТТЕУ
+        </h2>
+
+        <div class="teams">
+          <article class="team-card">
+            <p class="team-number">01 / ТОП</p>
+
+            <div class="emblem" aria-hidden="true">
+              <span>ℕ</span>
+            </div>
+
+            <h3>NATURAL</h3>
+            <p class="team-description">Натурал сандар</p>
+          </article>
+
+          <article class="team-card">
+            <p class="team-number">02 / ТОП</p>
+
+            <div class="emblem" aria-hidden="true">
+              <span>ℤ</span>
+            </div>
+
+            <h3>INTEGER</h3>
+            <p class="team-description">Бүтін сандар</p>
+          </article>
+
+          <article class="team-card">
+            <p class="team-number">03 / ТОП</p>
+
+            <div class="emblem" aria-hidden="true">
+              <span>ℚ</span>
+            </div>
+
+            <h3>RATIONAL</h3>
+            <p class="team-description">Рационал сандар</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="launch" aria-label="Топқа бөлуді бастау">
+        <!--
+          Бірінші кезең:
+          Батырма әдейі өшірулі.
+          Топқа бөлу алгоритмі келесі кезеңде қосылады.
+        -->
+        <button
+          class="start-button"
+          id="start-button"
+          type="button"
+          aria-describedby="launch-note"
+          disabled
+        >
+          <span>Топқа бөлуді бастау</span>
+          <span aria-hidden="true">→</span>
+        </button>
+
+        <p class="launch-note" id="launch-note">
+          Топқа бөлу мүмкіндігі келесі кезеңде іске қосылады.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>MATH DETECTIVE · Математика әлемін зертте</span>
+      <span>ℕ ⊂ ℤ ⊂ ℚ</span>
+    </footer>
+  </div>
+</body>
+</html>
